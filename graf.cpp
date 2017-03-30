@@ -43,7 +43,7 @@ void graf::wczytaj(string nazwa){
 			}}
 
 		for(int j=0; j<lk; j++){
-			sasiedzi[krawedzi[j].po][krawedzi[j].ko]=krawedzi[j].waga;
+			sasiedzi[krawedzi[j].po][krawedzi[j].ko]=sasiedzi[krawedzi[j].ko][krawedzi[j].po]=krawedzi[j].waga;
 		}
 
 	}
@@ -54,7 +54,7 @@ void graf::wczytaj(string nazwa){
 		cout<< "Macierz sasiedztwa (wag)" <<endl;
 			for(int j=0; j<lw; j++){
 				for(int i=0; i<lw; i++){
-					cout << setw(2) << sasiedzi[j][i] << " ";
+					cout << sasiedzi[j][i] << " ";
 				}
 			cout<<endl;		}
 		cout<<endl;
@@ -76,7 +76,7 @@ void graf::wczytaj(string nazwa){
 
 		cout<<endl<<"MST:"<<endl;
 		for(int i=0; i<lw-1; i++){
-			cout << setw(2) << MST[i].po << " " << setw(2) << MST[i].ko << " " << setw(2) << MST[i].waga << endl;
+			cout << MST[i].po << " " << MST[i].ko << " " << MST[i].waga << endl;
 
 		}
 	}
@@ -89,7 +89,7 @@ void graf::wczytaj(string nazwa){
 		plik << "Dane:" <<endl;
 			plik << lk << " " << lw << " " << wp << " " << wk << " "<< endl;
 		for(int i=0; i<lk; i++){
-			plik << setw(2) << krawedzi[i].po << " " << krawedzi[i].ko << " " << krawedzi[i].waga << endl;
+			plik << krawedzi[i].po << " " << krawedzi[i].ko << " " << krawedzi[i].waga << endl;
 
 		}
 	}
@@ -105,8 +105,8 @@ void graf::wczytaj(string nazwa){
 			return false;
 		}
 		else{
-			return(sasiedzi[n][m]!=NO_EDGE);
-
+			if(sasiedzi[n][m]!=NO_EDGE) return true;
+			else return false;
 		}
 	}
 
@@ -129,8 +129,8 @@ void graf::wczytaj(string nazwa){
 
 		krawedz min;
 		min.waga=2147483647;
-		for(int i=0; i< k .size(); i++){
-			for(int j=0; j < lw; j++){
+		for(int i=0; i<k.size(); i++){
+			for(int j=0; j<lw; j++){
 				if(sasiedzi2[k[i]][j]<min.waga && sasiedzi2[k[i]][j]!=NO_EDGE){
 					min.po=k[i];
 					min.ko=j;
@@ -151,147 +151,51 @@ void graf::wczytaj(string nazwa){
         }
 	}
 
-
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-		void graf::generuj_graf(int wierz, double ro){
-			int a,b;
-		lw=wierz;
-		wp=0;
-		wk=0;
-		lk=(ro/100*(lw*lw-lw))/2;   //graf nieskierowany, na przekatnej musza byc 0
+void graf::Kruskal(){
 
-		sasiedzi= new int *[lw];
-		for(int i=0; i<lw;i++){
-			sasiedzi[i]=new int [lw];
-		}
+	int j=0;					//zmienna pomocnicza
+	int x,y;
 
-		for(int j=0; j<lw; j++){
-			for(int i=0; i<lw; i++){
-			sasiedzi[j][i] = NO_EDGE;
-			}}
+	MST= new krawedz[lw-1];		//MST
 
-		krawedzi= new krawedz[lk];
-		for(int i=0; i<lw-1; i++){
-			sasiedzi[i][i+1] = sasiedzi[i+1][i] =(rand()%100)+1;
+	vector<int> *k;				//tablica klastrow
+	k= new vector<int>[lk];
 
+	for(int i=0; i<lw; i++){		//w kazdym klastrze jest jeden wierzcholek
+		k[i].push_back(i);
 	}
-		int c=lk-lw+1;
 
-		for(int i=0; i<c; i++){
-			a=rand()%lw;
-			b=rand()%lw;
-			if(sasiedzi[a][b]==NO_EDGE && a!=b)
-				sasiedzi[a][b] = sasiedzi[b][a] = (rand()%100)+1;
-	
-			else 
-				i--;
-		
+	sortuj_krawedzie();			//krawedzie sa posortowane
+
+
+	for(int i=0; j<lw-1; i++){		//glowna petla	
+		for(int a=0; a<lw; a++){	//znajdowanie wierzcholka poczatkowego w tablicy klastrow
+			if(czy_w_nalezy(krawedzi[i].po, k[a])) 
+				x=a;
 		}
-		int m=0;
-		krawedzi= new krawedz[lk];
-		for(int j=0; j<lw; j++){
-			for(int i=j; i<lw; i++){				//i=j jakbym chcial isc po trojkacie
-				if(sasiedzi[j][i]!=NO_EDGE){
-					krawedzi[m].po=i;
-					krawedzi[m].ko=j;
-					krawedzi[m].waga=sasiedzi[j][i];
-					m++;
-			}
-			}
+		for(int a=0; a<lw; a++){	//znajdowanie wierzcholka koncowego w tablicy klastrow
+			if(czy_w_nalezy(krawedzi[i].ko, k[a])) 
+				y=a;
+		}
+		if(x!=y){					//jesli wierzcholek poczatkowy i koncowy nie sa w tym samym klastrze
+			MST[j]=krawedzi[i];			
+			j++;	
+			k[x].reserve(k[x].size()+k[y].size());					// prealokowanie pamieci przy laczeniu klastrow
+			k[x].insert( k[x].end(), k[y].begin(), k[y].end() );    // dodawanie klastrow
+			k[y].clear();											//czyszczenie skopiowanego klastra
 
+		}	
 	}
-		};
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$	
-		void graf::Dijkstra(){
+	delete[] k;
+}
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+	void graf::Prim(){
 
-						//tablica odpowiadajaca za najkrotsze drogi dla kazdego z elementow
-		d= new vector<int>[lw];
-
-		int j=0;								//zmienne pomocnicze
-		vector<int> k;								//do wektora naleza wszystkie wierzcholki odwiedzone
-		krawedz tym;
-		int w=0;
-
-		sasiedzi2= new int *[lw];
-		for(int i=0; i<lw;i++){
-			sasiedzi2[i]=new int [lw];
-		}
-
-
-
-		for(int j=0; j<lw; j++){
-			for(int i=0; i<lw; i++){
-			sasiedzi2[j][i] = sasiedzi[j][i];
-			}
-		}
-
-		//k.push_back(rand()%lw);				//WIERZCHOLEK POCZATKOWY
-		k.push_back(9);
-
-		d[k[0]].push_back(k[0]);
-
-		for(int i=0; i<lw-1; ){
-			tym=najmniejsza(k);
-			if(!czy_w_nalezy(tym.ko,k)){
-				k.push_back(tym.ko);
-				w=0;
-				for (int j=0; j<d[tym.po].size()-1; j++){
-					w+=sasiedzi[d[tym.po][j]][d[tym.po][j+1]];
-				}
-
-
-
-				if((w + tym.waga) > sasiedzi[k[0]][tym.ko] && sasiedzi[k[0]][tym.ko]!=NO_EDGE ){
-					d[tym.ko].push_back(k[0]);
-					d[tym.ko].push_back(tym.ko);
-				}
-				else{
-				d[tym.ko].insert( d[tym.ko].end(), d[tym.po].begin(), d[tym.po].end() );   
-				d[tym.ko].push_back(tym.ko);
-
-				}
-
-
-				i++;
-			}
-				sasiedzi2[tym.po][tym.ko]=NO_EDGE;
-		}
-			
-
-			for(int i=0; i<lw; i++){
-				w=0;
-				for (int j=0; j<d[i].size()-1; j++){
-
-					w+=sasiedzi[d[i][j]][d[i][j+1]];
-				}
-				s_drog.push_back(w);
-			}
-		}
-
-
-//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-	void graf::Bellman(){
-
-						//tablica odpowiadajaca za najkrotsze drogi dla kazdego z elementow
-		d= new vector<int>[lw];
-		
-		vector<int> o;
-
-		int j=0;								//zmienne pomocnicze
-		vector<int> k;								//do wektora naleza wszystkie wierzcholki odwiedzone
-		krawedz tym;
-		int w=0;
-
-		//k.push_back(rand()%lw);				//WIERZCHOLEK POCZATKOWY
-		k.push_back(0);
-		
-		o.push_back(k[0]);
-
-		for(int i=0; i<lw; i++){
-			s_drog.push_back(MAX_INT);
-		}
-		
-		s_drog[k[0]]=0;
+		int j=0;									//zmienne pomocnicze
+		vector<int> k;								//do wektora naleza wszystkie wierzcholki uwzglednione w MST
+		MST= new krawedz[lw-1];						//MST
+		k.push_back(rand()%lw);
 
 
 		sasiedzi2= new int *[lw];
@@ -299,86 +203,62 @@ void graf::wczytaj(string nazwa){
 			sasiedzi2[i]=new int [lw];
 		}
 
-
-
 		for(int j=0; j<lw; j++){
 			for(int i=0; i<lw; i++){
 			sasiedzi2[j][i] = sasiedzi[j][i];
 			}
 		}
-
-
-	d[k[0]].push_back(k[0]);
-
-	for(int l=0; l<lw; l++){
-		for(int i=0; i<lw; i++){
-			if(sasiedzi2[k[0]][i]!=NO_EDGE){
-
-
-				if(!czy_w_nalezy(i,o)){
-					o.push_back(i);
-					k.push_back(i);
-				}
-				if(s_drog[i]>s_drog[k[0]]+sasiedzi2[k[0]][i]){
-					s_drog[i]=s_drog[k[0]]+sasiedzi2[k[0]][i];
-					d[i].clear();
-					d[i].insert( d[i].end(), d[k[0]].begin(), d[k[0]].end() );
-					d[i].push_back(i);
-				}
-				sasiedzi2[k[0]][i]=NO_EDGE;
-			}
-		}
-		k.erase(k.begin());
-	}
-	
-
-			for(int i=0; i<lw; i++){
-				w=0;
-				for (int j=0; j<d[i].size()-1; j++){
-
-					w+=sasiedzi[d[i][j]][d[i][j+1]];
-				}
-				s_drog.push_back(w);
-			}
-		}
-
-
-
-
-
-
-
-
-
-void graf::wyswietl_MR(){
-		//wyswietlanie
-				for(int i=0; i<lw; i++){
-					cout << i << " - Suma: " << setw(3) << s_drog[i] << " Droga: ";
-					for(int m=0; m<d[i].size(); m++){
-						cout << d[i][m] << " ";
-					}
-					cout << endl;
-				}
-		
-
-		/*
-		krawedz tym;
-
 
 		for(int i=0; j<lw-1; i++){					//glowna petla programu
-			tym=najmniejsza(k);
-			if(!czy_w_nalezy(tym.ko,k)){
-				MST[j]=tym;
-				k.push_back(MST[j].ko);
-				j++;
+			MST[j]=najmniejsza(k);
+			k.push_back(MST[j].ko);
+			sasiedzi2[MST[j].ko][MST[j].po]=sasiedzi2[MST[j].po][MST[j].ko]=NO_EDGE;
+			j++;
 		}
-		sasiedzi2[tym.ko][tym.po]=sasiedzi2[tym.po][tym.ko]=NO_EDGE;
+	}
+	/*
+	void graf::Kruskal(){
+
+		int j=0;									//zmienne pomocnicze
+		vector<int> k;								//do wektora naleza wszystkie wierzcholki uwzglednione w MST
+
+		sortuj_krawedzie();							//sortowanie krawedzi
+
+		MST= new krawedz[lw-1];						//MST o rozmiarze l.wierzcholkow-1
+
+		k.push_back(krawedzi[0].po);				//krawedz o indeksie 0 na pewno bedzie nalezala do MST
+		k.push_back(krawedzi[0].ko);
+		MST[j]=krawedzi[0];
+		j++;
+
+
+		
+		for(int i=1; k.size() < lw; i++){
+			if(czy_w_nalezy(krawedzi[i].po, k) && !czy_w_nalezy(krawedzi[i].ko, k)){
+				k.push_back(krawedzi[i].ko);								//jesli nie ma ko dodaj ko do wektora i krawedz do MST
+				MST[j]=krawedzi[i];
+				j++;
+			}
+			if(!czy_w_nalezy(krawedzi[i].po, k) && czy_w_nalezy(krawedzi[i].ko, k)){
+				k.push_back(krawedzi[i].po);								//jesli nie ma po dodaj po do wektora i krawedz do MST
+				MST[j]=krawedzi[i];
+				j++;
+			}
+			if(!czy_w_nalezy(krawedzi[i].po, k) && !czy_w_nalezy(krawedzi[i].ko, k)){
+
+				MST[j]=najmniejsza(krawedzi[i].po, krawedzi[i].po, k);
+				k.push_back(krawedzi[i].po);
+				k.push_back(krawedzi[i].ko);
+				MST[j]=krawedzi[i];
+				j++;
+
+			}
+		}	
+
 
 	}
-	suma_MST();
+	*/
 
-			;*/
-		};
 //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 	bool graf::czy_w_nalezy(int w, vector<int> k){
 			
@@ -387,12 +267,4 @@ void graf::wyswietl_MR(){
 					return true;
 			}
 			return false;
-	}
-
-	int graf::suma_MST(){
-		s_MST=0;
-		for(int i=0; i<lw-1; i++){
-			s_MST=s_MST+MST[i].waga;
-		}
-		return s_MST;
 	}

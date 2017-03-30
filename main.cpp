@@ -25,6 +25,7 @@ int main(){
 	pierwszy.wczytaj(nazwa);
 
 	pierwszy.wyswietl_sasiadow();
+pierwszy.Djikstra();
 	pierwszy.Bellman();
 	pierwszy.wyswietl_MR();
 

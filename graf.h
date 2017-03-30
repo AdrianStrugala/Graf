@@ -4,11 +4,8 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
-#include <iomanip>
 
-#define		NO_EDGE  0			//wartosc wagi oznaczajecej brak krawedzi
-#define		MAX_INT	 2147483647
-
+#define		NO_EDGE		0				//wartosc wagi oznaczajecej brak krawedzi
 
 using namespace std; 
 
@@ -35,8 +32,6 @@ class graf{
 	krawedz najmniejsza(int v);
 	krawedz graf::najmniejsza(vector<int> k);
 	int **sasiedzi2;		//pomocnicza macierz sasiedztwa
-	int suma_MST();
-
 
 
 public:
@@ -47,10 +42,6 @@ public:
 	int **sasiedzi;		//macierz sasiedztwa
 	krawedz *krawedzi;  //tablica krawedzi
 	krawedz *MST;		//minimalne drzewo rozpinajace
-	vector<int> *d;		//najkrotsze drogi
-
-	int s_MST;
-	vector<int> s_drog;
 
 
 	graf();
@@ -60,15 +51,11 @@ public:
 	void wyswietl_sasiadow();
 	void wyswietl_dane();
 	void wyswietl_MST();
-	void wyswietl_MR();
 	void zapisz(string nazwa);
 	bool czy_krawedz(int n, int m);
 	void sortuj_krawedzie();
-	void generuj_graf(int wierz, double ro);
-
-	void Dijkstra();
-	void Bellman();
-
+	void Kruskal();
+	void Prim();
 
 
 };
